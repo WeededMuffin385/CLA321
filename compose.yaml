@@ -1,0 +1,89 @@
+services:
+  traefik:
+    image: traefik:v3
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--api.insecure=true"
+      - "--log.level=DEBUG"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - gitlab-network
+
+  gitlab:
+    image: gitlab/gitlab-ce:latest
+    container_name: gitlab
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=gitlab-local"
+      - "traefik.http.routers.gitlab.rule=Host(`gitlab.localhost`)"
+      - "traefik.http.routers.gitlab.entrypoints=web"
+      - "traefik.http.services.gitlab.loadbalancer.server.port=80"
+
+    environment:
+      TZ: Australia/Sydney
+
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://gitlab.localhost'
+        
+        puma['worker_processes'] = 2
+        sidekiq['concurrency'] = 4
+        
+        letsencrypt['enable'] = false
+
+    volumes:
+      - gitlab-config:/etc/gitlab
+      - gitlab-logs:/var/log/gitlab
+      - gitlab-data:/var/opt/gitlab
+
+    shm_size: "256m"
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "curl",
+          "--fail",
+          "--silent",
+          "http://localhost/-/health"
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 20
+      start_period: 5m
+
+    networks:
+      - gitlab-network
+
+  gitlab_runner:
+    image: gitlab/gitlab-runner:alpine
+    container_name: gitlab_runner
+
+    depends_on:
+      gitlab:
+        condition: service_healthy
+
+    environment:
+      TZ: Australia/Sydney
+
+    volumes:
+      - gitlab-runner-config:/etc/gitlab-runner
+      - /var/run/docker.sock:/var/run/docker.sock
+
+    networks:
+      - gitlab-network
+
+networks:
+  gitlab-network:
+    name: gitlab-local
+
+volumes:
+  gitlab-runner-config:
+  gitlab-config:
+  gitlab-logs:
+  gitlab-data:

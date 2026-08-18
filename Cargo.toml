@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "hello_world_service",
+]
+
+[workspace.dependencies]
