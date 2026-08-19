@@ -70,7 +70,9 @@ services:
       start_period: 5m
 
     networks:
-      - cla321-network
+      cla321-network:
+        aliases:
+         - gitlab.localhost
 
   gitlab_runner:
     image: gitlab/gitlab-runner:alpine
