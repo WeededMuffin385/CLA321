@@ -1,0 +1,20 @@
+stages:
+  - test
+  - deploy
+
+test:
+  stage: test
+  image: rust:latest
+  script:
+    - cargo test --workspace
+
+deploy:
+  stage: deploy
+  image:
+    name: bitnami/kubectl:latest
+    entrypoint: [""]
+  script:
+    - kubectl apply -R -f k8s/
+    - kubectl rollout status deployment/hello_world_service --timeout=120s
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'

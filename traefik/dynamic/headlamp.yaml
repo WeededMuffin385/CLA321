@@ -1,0 +1,21 @@
+http:
+  routers:
+    headlamp:
+      rule: "Host(`headlamp.localhost`)"
+      entryPoints:
+        - web
+      service: k3d-headlamp
+      middlewares:
+        - headlamp-host
+
+  services:
+    k3d-headlamp:
+      loadBalancer:
+        servers:
+          - url: "http://k3d-dev-server-0"
+
+  middlewares:
+    headlamp-host:
+      headers:
+        customRequestHeaders:
+          Host: "headlamp.k3d.local"

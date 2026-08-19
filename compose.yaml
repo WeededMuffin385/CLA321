@@ -4,7 +4,12 @@ services:
     command:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
+
+      - "--providers.file.directory=/etc/traefik/dynamic"
+      - "--providers.file.watch=true"
+
       - "--entrypoints.web.address=:80"
+
       - "--api.insecure=true"
       - "--log.level=DEBUG"
     ports:
@@ -12,24 +17,31 @@ services:
       - "8080:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./traefik/dynamic:/etc/traefik/dynamic:ro"
     networks:
-      - gitlab-network
+      - cla321-network
+      - k3d-dev
 
   gitlab:
     image: gitlab/gitlab-ce:latest
     container_name: gitlab
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=gitlab-local"
+      - "traefik.docker.network=cla321-network"
       - "traefik.http.routers.gitlab.rule=Host(`gitlab.localhost`)"
       - "traefik.http.routers.gitlab.entrypoints=web"
       - "traefik.http.services.gitlab.loadbalancer.server.port=80"
+
+    ports:
+      - "2222:22"
 
     environment:
       TZ: Australia/Sydney
 
       GITLAB_OMNIBUS_CONFIG: |
         external_url 'http://gitlab.localhost'
+        
+        gitlab_rails['gitlab_shell_ssh_port'] = 2222
         
         puma['worker_processes'] = 2
         sidekiq['concurrency'] = 4
@@ -58,7 +70,7 @@ services:
       start_period: 5m
 
     networks:
-      - gitlab-network
+      - cla321-network
 
   gitlab_runner:
     image: gitlab/gitlab-runner:alpine
@@ -76,11 +88,15 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 
     networks:
-      - gitlab-network
+      - cla321-network
 
 networks:
-  gitlab-network:
-    name: gitlab-local
+  cla321-network:
+    name: cla321-network
+
+  k3d-dev:
+    external: true
+    name: k3d-dev
 
 volumes:
   gitlab-runner-config:

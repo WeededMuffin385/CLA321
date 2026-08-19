@@ -21,7 +21,9 @@ target
 .idea/
 
 
-
-
-
+# Runtime assets, including passwords, tokens and other artifacts
 assets/
+
+
+# GitLab repository linked locally here
+monorepo_gitlab/
