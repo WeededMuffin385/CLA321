@@ -27,3 +27,9 @@ assets/
 
 # GitLab repository linked locally here
 monorepo_gitlab/
+
+
+# Local certificates
+notebooks/certs/
+traefik/certs/
+k3d/certs/

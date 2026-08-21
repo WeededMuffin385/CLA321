@@ -1,0 +1,10 @@
+tls:
+  certificates:
+    - certFile: /etc/traefik/certs/gitlab/gitlab.localhost.crt
+      keyFile: /etc/traefik/certs/gitlab/gitlab.localhost.key
+
+    - certFile: /etc/traefik/certs/headlamp/headlamp.localhost.crt
+      keyFile: /etc/traefik/certs/headlamp/headlamp.localhost.key
+
+    - certFile: /etc/traefik/certs/registry/registry.gitlab.localhost.crt
+      keyFile: /etc/traefik/certs/registry/registry.gitlab.localhost.key

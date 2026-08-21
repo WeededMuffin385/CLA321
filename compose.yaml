@@ -9,18 +9,25 @@ services:
       - "--providers.file.watch=true"
 
       - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
 
       - "--api.insecure=true"
       - "--log.level=DEBUG"
     ports:
       - "80:80"
+      - "443:443"
       - "8080:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "./traefik/dynamic:/etc/traefik/dynamic:ro"
+      - "./traefik/certs:/etc/traefik/certs:ro"
     networks:
-      - cla321-network
-      - k3d-dev
+      cla321-network:
+      k3d-dev:
+        aliases:
+          - registry.gitlab.localhost
+          - gitlab.localhost
+          - headlamp.localhost
 
   gitlab:
     image: gitlab/gitlab-ce:latest
@@ -28,9 +35,18 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=cla321-network"
+
       - "traefik.http.routers.gitlab.rule=Host(`gitlab.localhost`)"
-      - "traefik.http.routers.gitlab.entrypoints=web"
+      - "traefik.http.routers.gitlab.entrypoints=websecure"
+      - "traefik.http.routers.gitlab.tls=true"
+      - "traefik.http.routers.gitlab.service=gitlab"
       - "traefik.http.services.gitlab.loadbalancer.server.port=80"
+
+      - "traefik.http.routers.gitlab-registry.rule=Host(`registry.gitlab.localhost`)"
+      - "traefik.http.routers.gitlab-registry.entrypoints=websecure"
+      - "traefik.http.routers.gitlab-registry.tls=true"
+      - "traefik.http.routers.gitlab-registry.service=gitlab-registry"
+      - "traefik.http.services.gitlab-registry.loadbalancer.server.port=5005"
 
     ports:
       - "2222:22"
@@ -39,9 +55,23 @@ services:
       TZ: Australia/Sydney
 
       GITLAB_OMNIBUS_CONFIG: |
-        external_url 'http://gitlab.localhost'
-        
+        external_url 'https://gitlab.localhost'
         gitlab_rails['gitlab_shell_ssh_port'] = 2222
+        
+        gitlab_rails['nginx']['listen_port'] = 80
+        gitlab_rails['nginx']['listen_https'] = false
+        
+        registry_external_url 'https://registry.gitlab.localhost'
+        
+        registry['enable'] = true
+        gitlab_rails['registry_enabled'] = true
+        
+        registry['nginx']['listen_port'] = 5005
+        registry['nginx']['listen_https'] = false
+        
+        registry['env'] = {
+          "REGISTRY_HTTP_RELATIVEURLS" => true
+        }
         
         puma['worker_processes'] = 2
         sidekiq['concurrency'] = 4
@@ -73,6 +103,7 @@ services:
       cla321-network:
         aliases:
          - gitlab.localhost
+         - registry.gitlab.localhost
 
   gitlab_runner:
     image: gitlab/gitlab-runner:alpine

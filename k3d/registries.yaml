@@ -1,0 +1,9 @@
+mirrors:
+  "registry.gitlab.localhost":
+    endpoint:
+      - "https://registry.gitlab.localhost"
+
+configs:
+  "registry.gitlab.localhost":
+    tls:
+      ca_file: /etc/rancher/k3s/certs/cla321-local-ca.crt

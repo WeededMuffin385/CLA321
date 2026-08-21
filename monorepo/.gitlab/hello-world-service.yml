@@ -1,0 +1,55 @@
+hello-world-service:test:
+  stage: test
+  image: rust:latest
+  script:
+    - cargo test --workspace
+
+hello-world-service:build:
+  stage: build
+  image: docker:cli
+  variables:
+    IMAGE_TAG: "$CI_REGISTRY_IMAGE/hello-world-service:$CI_COMMIT_SHA"
+  script:
+    - |
+      echo "$CI_REGISTRY_PASSWORD" |
+        docker login "$CI_REGISTRY" \
+          --username "$CI_REGISTRY_USER" \
+          --password-stdin
+
+    - |
+      docker build \
+        -f hello_world_service/Dockerfile \
+        -t "$IMAGE_TAG" \
+        .
+
+    - docker push "$IMAGE_TAG"
+
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+hello-world-service:deploy:
+  stage: deploy
+  image:
+    name: bitnami/kubectl:latest
+    entrypoint: [""]
+  variables:
+    IMAGE_TAG: "$CI_REGISTRY_IMAGE/hello-world-service:$CI_COMMIT_SHA"
+
+  script:
+    - mkdir -p "$HOME/.kube"
+    - printf '%s' "$KUBECONFIG_CONTENT" > "$HOME/.kube/config"
+
+    - envsubst < k8s/hello_world_service/deployment.template.yaml > k8s/hello_world_service/deployment.yaml
+    - kubectl apply -R -f k8s/
+
+    - |
+      kubectl set image \
+        deployment/hello-world-service \
+        hello-world-service="$IMAGE_TAG"
+
+    - |
+      kubectl rollout status \
+        deployment/hello-world-service \
+        --timeout=120s
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
