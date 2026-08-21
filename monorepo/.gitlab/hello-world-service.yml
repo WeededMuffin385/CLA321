@@ -40,7 +40,7 @@ hello-world-service:deploy:
     - printf '%s' "$KUBECONFIG_CONTENT" > "$HOME/.kube/config"
 
     - envsubst < k8s/hello_world_service/deployment.template.yaml > k8s/hello_world_service/deployment.yaml
-    - kubectl apply -R -f k8s/
+    - kubectl apply -R -f k8s/hello_world_service
 
     - |
       kubectl set image \

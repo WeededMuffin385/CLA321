@@ -26,8 +26,8 @@ services:
       k3d-dev:
         aliases:
           - registry.gitlab.localhost
-          - gitlab.localhost
           - headlamp.localhost
+          - gitlab.localhost
 
   gitlab:
     image: gitlab/gitlab-ce:latest

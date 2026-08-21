@@ -1,0 +1,21 @@
+http:
+  routers:
+    hello-world:
+      rule: "Host(`hello-world.localhost`)"
+      entryPoints:
+        - web
+      service: k3d-hello-world
+      middlewares:
+        - hello-world-host
+
+  services:
+    k3d-hello-world:
+      loadBalancer:
+        servers:
+          - url: "http://k3d-dev-server-0"
+
+  middlewares:
+    hello-world-host:
+      headers:
+        customRequestHeaders:
+          Host: "hello-world.k3d.local"
