@@ -11,3 +11,6 @@ tls:
 
     - certFile: /etc/traefik/certs/openbao/openbao.localhost.crt
       keyFile: /etc/traefik/certs/openbao/openbao.localhost.key
+
+    - certFile: /etc/traefik/certs/hello-world/hello-world.localhost.crt
+      keyFile: /etc/traefik/certs/hello-world/hello-world.localhost.key

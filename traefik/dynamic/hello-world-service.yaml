@@ -3,10 +3,11 @@ http:
     hello-world:
       rule: "Host(`hello-world.localhost`)"
       entryPoints:
-        - web
+        - websecure
       service: k3d-hello-world
       middlewares:
         - hello-world-host
+      tls: {}
 
   services:
     k3d-hello-world:
