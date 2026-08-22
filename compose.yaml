@@ -1,6 +1,7 @@
 services:
   traefik:
     image: traefik:v3
+    container_name: traefik
     command:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
@@ -123,6 +124,50 @@ services:
     networks:
       - cla321-network
 
+
+  openbao:
+    image: openbao/openbao:2.6.2
+    container_name: openbao
+
+    depends_on:
+      openbao_init:
+        condition: service_completed_successfully
+
+    command:
+      - server
+
+    environment:
+      BAO_ADDR: http://127.0.0.1:8200
+
+    volumes:
+      - ./openbao/openbao.hcl:/openbao/config/openbao.hcl:ro
+      - openbao-data:/openbao/data
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=cla321-network"
+
+      - "traefik.http.routers.openbao.rule=Host(`openbao.localhost`)"
+      - "traefik.http.routers.openbao.entrypoints=websecure"
+      - "traefik.http.routers.openbao.tls=true"
+      - "traefik.http.routers.openbao.service=openbao"
+
+      - "traefik.http.services.openbao.loadbalancer.server.port=8200"
+
+    networks:
+      cla321-network:
+
+  openbao_init:
+    image: alpine:3.22
+    user: "0:0"
+    command:
+      - sh
+      - -c
+      - chown -R 100:100 /openbao/data
+    volumes:
+      - openbao-data:/openbao/data
+
+
 networks:
   cla321-network:
     name: cla321-network
@@ -135,4 +180,7 @@ volumes:
   gitlab-runner-config:
   gitlab-config:
   gitlab-logs:
+
+
   gitlab-data:
+  openbao-data:

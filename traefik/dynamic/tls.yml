@@ -8,3 +8,6 @@ tls:
 
     - certFile: /etc/traefik/certs/registry/registry.gitlab.localhost.crt
       keyFile: /etc/traefik/certs/registry/registry.gitlab.localhost.key
+
+    - certFile: /etc/traefik/certs/openbao/openbao.localhost.crt
+      keyFile: /etc/traefik/certs/openbao/openbao.localhost.key

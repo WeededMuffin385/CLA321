@@ -1,1 +1,1 @@
-# The main algorithms for the presentation are located in the [bootstrap jupiter notebook](notebooks/002_docker_and_gitlab.ipynb)
+# The main algorithms for the presentation are located in the [bootstrap jupiter notebook](notebooks/004_gitlab.ipynb)
