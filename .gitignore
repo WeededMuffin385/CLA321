@@ -33,3 +33,6 @@ monorepo_gitlab/
 notebooks/certs/
 traefik/certs/
 k3d/certs/
+
+
+presentation/
