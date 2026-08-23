@@ -16,7 +16,7 @@ spec:
         - name: gitlab-registry
       containers:
         - name: hello-world-service
-          image: hello-world-service:${IMAGE_TAG}
+          image: ${IMAGE_TAG}
           env:
             - name: RUST_LOG
               value: trace
