@@ -3,10 +3,11 @@ http:
     headlamp:
       rule: "Host(`headlamp.localhost`)"
       entryPoints:
-        - web
+        - websecure
       service: k3d-headlamp
       middlewares:
         - headlamp-host
+      tls: {}
 
   services:
     k3d-headlamp:

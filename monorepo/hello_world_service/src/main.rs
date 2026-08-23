@@ -1,8 +1,13 @@
+use axum::http::header::{AUTHORIZATION, COOKIE, SET_COOKIE};
 use tokio_util::sync::CancellationToken;
+use tower_http::sensitive_headers::SetSensitiveHeadersLayer;
+use tower_http::trace::TraceLayer;
 use tracing::info;
 use tracing_subscriber::EnvFilter;
+use crate::context::Context;
 
 mod app;
+mod context;
 
 #[tokio::main]
 async fn main() {
@@ -31,8 +36,21 @@ async fn main() {
     });
 
     info!("Hello, World!");
+
+    let context = Context::new().await;
+
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8080").await.unwrap();
-    axum::serve(listener, app::router()).with_graceful_shutdown({
+    axum::serve(
+        listener,
+        app::router()
+            .with_state(context)
+            .layer(SetSensitiveHeadersLayer::new([
+                AUTHORIZATION,
+                SET_COOKIE,
+                COOKIE,
+            ]))
+            .layer(TraceLayer::new_for_http())
+    ).with_graceful_shutdown({
         let shutdown = shutdown.clone();
         
         async move {

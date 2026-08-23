@@ -31,7 +31,7 @@ services:
           - gitlab.localhost
 
   gitlab:
-    image: gitlab/gitlab-ce:latest
+    image: gitlab/gitlab-ce:19.3.0-ce.0
     container_name: gitlab
     labels:
       - "traefik.enable=true"
